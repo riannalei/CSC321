@@ -1,48 +1,50 @@
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 
-#generating the AES key and IV 
-key = get_random_bytes(16)  #AES 128 requires 16byte key 
-iv = get_random_bytes(16)  #or CBC mode
+#generating the random 16byte AES key and IV 
+key = get_random_bytes(16)  
+iv = get_random_bytes(16)  
 
+#add padding so the data is multiple of 16 bytes 
 def pad_pkcs7(data, block_size=16):
-    """Add PKCS#7 padding to data."""
     padding_length = block_size - (len(data) % block_size)
     return data + bytes([padding_length] * padding_length)
 
+#encrypt data in ECB mode block by block
 def aes_ecb_encrypt(plaintext, key):
-    """Encrypt plaintext using AES in ECB mode (manual implementation)."""
-    cipher = AES.new(key, AES.MODE_ECB)
+    cipher = AES.new(key, AES.MODE_ECB)  # create an AES cipher in ECB mode
     ciphertext = b""
+    # process plaintext in chunks of 16 bytes
     for i in range(0, len(plaintext), 16):
         block = plaintext[i:i+16]
-        ciphertext += cipher.encrypt(block)
+        ciphertext += cipher.encrypt(block)  # encrypt each block
     return ciphertext
 
+#encrypt data in CBC mode block by block
 def aes_cbc_encrypt(plaintext, key, iv):
-    """Encrypt plaintext using AES in CBC mode (manual implementation)."""
-    cipher = AES.new(key, AES.MODE_ECB)  # Use ECB for individual block encryption
+    cipher = AES.new(key, AES.MODE_ECB) 
     ciphertext = b""
-    previous_block = iv
+    previous_block = iv  # start chaining with the IV
+    # process plaintext in chunks of 16 bytes
     for i in range(0, len(plaintext), 16):
         block = plaintext[i:i+16]
+        # XOR the block with the previous ciphertext block (or IV)
         block = bytes([b ^ p for b, p in zip(block, previous_block)])
-        encrypted_block = cipher.encrypt(block)
+        encrypted_block = cipher.encrypt(block)  # encrypt the XORed block
         ciphertext += encrypted_block
-        previous_block = encrypted_block
+        previous_block = encrypted_block  # update the chaining block
     return ciphertext
 
+# read the BMP file and separate the header and pixel data
 def read_bmp_file(file_path):
-    """Read BMP file, separating the header and body."""
     with open(file_path, "rb") as f:
         data = f.read()
-    header = data[:54] 
-
+    header = data[:54] #BMP header is the first 54 bytes, and the rest is pixel data
     body = data[54:]
     return header, body
 
+#write the header and encrypted pixel dtaa back to a new BMP file 
 def write_bmp_file(file_path, header, encrypted_body):
-    """Write encrypted BMP file, preserving the header."""
     with open(file_path, "wb") as f:
         f.write(header + encrypted_body)
 
