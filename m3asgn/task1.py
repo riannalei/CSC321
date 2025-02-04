@@ -4,7 +4,9 @@ from Crypto.Util.Padding import pad, unpad
 import random
 
 def diffie_hellman():
-    # Parameters
+    # Small test parameters
+    # q = 37
+    # alpha = 5
     q = int("B10B8F96A080E01DDE92DE5EAE5D54EC52C99FBCFB06A3C69A6A9DCA52D23B61"
             "6073E28675A23D189838EF1E2EE652C013ECB4AEA906112324975C3CD49B83BF"
             "ACCBDD7D90C4BD7098488E9C219A73724EFFD6FAE5644738FAA31A4FF55BCCC0"
